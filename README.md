@@ -1,7 +1,5 @@
 # ArcPoint: Context Engine
 
-> Predictive Circuit Breaker for Intelligent Request Routing
-
 **TL;DR:** ML-powered intelligent router with predictive circuit breaker that forecasts backend latency 5 minutes ahead using Random Forest (62ms MAE, <1ms inference). Includes closed-loop feedback with online learning (SGDRegressor), Page-Hinkley drift detection, and Isolation Forest anomaly detection. Demonstrates production ML: time-series feature engineering, temporal validation splits, real-time model retraining, chaos testing, and Streamlit observability dashboard.
 
 ---
