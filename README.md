@@ -20,7 +20,7 @@ Our mission: Answer proactively in real-time:
 
 ## Solution: Three Approaches
 
-### Option 3: ML-Augmented Routing (Primary)
+### 1. ML-Augmented Routing (Primary)
 Predictive circuit breaker using Random Forest to detect latency degradation 5 minutes ahead.
 
 **Key metrics:**
@@ -29,14 +29,14 @@ Predictive circuit breaker using Random Forest to detect latency degradation 5 m
 - Inference latency: <1ms
 - Decision: If predicted_latency > 300ms → REROUTE
 
-### Option 2: LLM-Based Agent (Bonus)
+### 2. LLM-Based Agent (Bonus)
 Context API + Claude agent for explainable routing decisions with full reasoning trace.
 
 **Trade-off:**
 - Latency: ~500ms (slower but interpretable)
 - Best for: Edge cases, complex scenarios, auditing
 
-### Advanced: Closed-Loop Learning (Production-Grade)
+### 3. Closed-Loop Learning (Production-Grade)
 - **Feedback Loop:** Real-time outcome capture + online model updates
 - **Drift Detection:** Page-Hinkley test alerts when model degrades
 - **Anomaly Detection:** Isolation Forest catches novel failure patterns
