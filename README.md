@@ -1,5 +1,9 @@
 # ArcPoint: Context Engine
 
+![Python Version](https://img.shields.io/badge/python-3.12+-green.svg)
+![Code Size](https://img.shields.io/github/languages/code-size/mann-127/MiniGit)
+[![GitHub Stars](https://img.shields.io/github/stars/mann-127/MiniGit?style=social)](https://github.com/mann-127/MiniGit)
+
 **TL;DR:** ML-powered intelligent router with predictive circuit breaker that forecasts backend latency 5 minutes ahead using Random Forest (62ms MAE, <1ms inference). Includes closed-loop feedback with online learning (SGDRegressor), Page-Hinkley drift detection, and Isolation Forest anomaly detection. Demonstrates production ML: time-series feature engineering, temporal validation splits, real-time model retraining, chaos testing, and Streamlit observability dashboard.
 
 ---
