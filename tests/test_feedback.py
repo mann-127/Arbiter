@@ -1,18 +1,19 @@
 """Tests for feedback loops, online learning, and A/B testing."""
-import sys
+
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import pytest
 import numpy as np
+import pytest
+
 from arcpoint.feedback.loop import (
+    ABTestFramework,
+    DriftDetector,
     FeedbackCollector,
     OnlineLearner,
-    DriftDetector,
-    ABTestFramework,
 )
-
 
 # ============================================================================
 # FeedbackCollector Tests
@@ -49,12 +50,12 @@ class TestFeedbackCollector:
         assert record.was_correct is True  # Didn't reroute, didn't need to
 
     def test_record_feedback_reroute_decision(self, feedback_collector):
-        """Recording reroute decision feedback."""
+        """Reroute was the correct call when actual latency exceeded threshold."""
         record = feedback_collector.record(
             request_id="req_2",
             features=[300.0, 350.0, 50.0],
             predicted_latency=320.0,
-            actual_latency=250.0,
+            actual_latency=350.0,  # actually above threshold → reroute was correct
             routing_decision="REROUTE",
             threshold=300.0,
         )
@@ -298,7 +299,7 @@ class TestDriftDetector:
 @pytest.fixture
 def ab_test():
     """Initialize an A/B test framework."""
-    return ABTestFramework(control_ratio=0.5, random_seed=42)
+    return ABTestFramework(control_ratio=0.5)
 
 
 class TestABTestFramework:

@@ -1,12 +1,14 @@
 """Shared Pydantic schemas for Context API and routing system."""
-from typing import Dict, List, Optional
+
 from datetime import datetime
 from enum import Enum
+
 from pydantic import BaseModel, Field
 
 
 class Availability(str, Enum):
     """Model/backend availability status."""
+
     AVAILABLE = "available"
     DEGRADED = "degraded"
     DOWN = "down"
@@ -14,6 +16,7 @@ class Availability(str, Enum):
 
 class IncidentSeverity(str, Enum):
     """Incident severity level."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -22,6 +25,7 @@ class IncidentSeverity(str, Enum):
 
 class ModelHealth(BaseModel):
     """Health status of an AI model."""
+
     model_id: str
     availability: Availability
     error_rate: float = Field(ge=0, le=1)
@@ -32,6 +36,7 @@ class ModelHealth(BaseModel):
 
 class BackendStatus(BaseModel):
     """Current state of a compute backend."""
+
     backend_id: str
     region: str
     provider: str
@@ -43,6 +48,7 @@ class BackendStatus(BaseModel):
 
 class UserContext(BaseModel):
     """User-specific SLA and quota context."""
+
     user_id: str
     tier: str  # e.g., "free", "pro", "enterprise"
     sla_latency_ms: float = Field(ge=0)
@@ -54,6 +60,7 @@ class UserContext(BaseModel):
 
 class Incident(BaseModel):
     """Recent system incident."""
+
     incident_id: str
     timestamp: datetime
     severity: IncidentSeverity
@@ -63,6 +70,7 @@ class Incident(BaseModel):
 
 class TrafficForecast(BaseModel):
     """Traffic prediction for the next N minutes."""
+
     current_requests_per_min: int = Field(ge=0)
     predicted_requests_per_min: int = Field(ge=0)
     confidence: float = Field(ge=0, le=1)
@@ -71,6 +79,7 @@ class TrafficForecast(BaseModel):
 
 class RoutingDecision(BaseModel):
     """Routing decision made by the system."""
+
     request_id: str
     user_id: str = "system"
     predicted_latency_ms: float = Field(ge=0)
@@ -81,6 +90,7 @@ class RoutingDecision(BaseModel):
 
 class FeedbackRecord(BaseModel):
     """Feedback on a routing decision outcome."""
+
     request_id: str
     predicted_latency_ms: float = Field(ge=0)
     actual_latency_ms: float = Field(ge=0)

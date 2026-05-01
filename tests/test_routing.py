@@ -1,14 +1,15 @@
 """Tests for routing correctness and decision quality."""
-import sys
+
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import pytest
 import numpy as np
-import pandas as pd
-from arcpoint.routing.engine import RealTimeFeatureStore, IntelligentRouter
+import pytest
+
+from arcpoint.routing.engine import IntelligentRouter, RealTimeFeatureStore
 from arcpoint.routing.model import MODEL_OUTPUT_PATH
-import joblib
 
 
 @pytest.fixture
