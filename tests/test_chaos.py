@@ -1,11 +1,13 @@
 """Tests for chaos engineering and failure injection."""
-import sys
+
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
-from arcpoint.diagnostics.chaos import ChaosSimulator, FailureType, ChaosEvent
+
+from arcpoint.diagnostics.chaos import ChaosSimulator, FailureType
 
 
 @pytest.fixture
@@ -179,21 +181,21 @@ class TestChaosSimulationStep:
     def test_chaos_step_increment(self, chaos_simulator):
         """Stepping should advance simulation."""
         chaos_simulator.inject_failure(FailureType.LATENCY_SPIKE, 10)
-        
+
         initial_step = chaos_simulator.current_step
         chaos_simulator.step()
-        
+
         assert chaos_simulator.current_step > initial_step
 
     def test_chaos_duration_expiry(self, chaos_simulator):
         """Chaos should expire after duration."""
         duration = 5
         chaos_simulator.inject_failure(FailureType.LATENCY_SPIKE, duration)
-        
+
         # Advance beyond duration
         for _ in range(duration + 2):
             chaos_simulator.step()
-        
+
         # Active chaos might be cleared, or new injection needed
         # Depends on implementation
 
@@ -202,10 +204,10 @@ class TestChaosSimulationStep:
         chaos_simulator.inject_failure(FailureType.LATENCY_SPIKE, 20)
         chaos_simulator.step()
         chaos_simulator.step()
-        
+
         # Inject second failure while first is active
         chaos_simulator.inject_failure(FailureType.TRAFFIC_SURGE, 15)
-        
+
         # Should track both
         assert len(chaos_simulator.chaos_history) == 2
 
@@ -219,7 +221,7 @@ class TestChaosApplicability:
             failure_type=FailureType.BACKEND_DOWN,
             affected_backends=["primary"],
         )
-        
+
         assert event.affected_backends == ["primary"]
         assert "secondary" not in event.affected_backends
 
@@ -229,13 +231,13 @@ class TestChaosApplicability:
             failure_type=FailureType.CASCADING_FAILURE,
             affected_backends=["primary", "secondary"],
         )
-        
+
         assert len(event.affected_backends) == 2
 
     def test_default_affects_primary(self, chaos_simulator):
         """If not specified, should default to primary backend."""
         event = chaos_simulator.inject_failure(FailureType.LATENCY_SPIKE)
-        
+
         # Should affect some backend(s)
         assert len(event.affected_backends) > 0
 
@@ -246,7 +248,7 @@ class TestChaosIntegration:
     def test_routing_handles_latency_spike(self):
         """Routing should adapt to injected latency spike."""
         simulator = ChaosSimulator()
-        
+
         # Inject failure
         simulator.inject_failure(
             FailureType.LATENCY_SPIKE,
@@ -254,35 +256,33 @@ class TestChaosIntegration:
             intensity=0.8,
             affected_backends=["primary"],
         )
-        
+
         # Routing decision should account for chaos
         assert simulator.active_chaos is not None
 
     def test_routing_fallback_on_backend_down(self):
         """Routing should use fallback when backend down."""
         simulator = ChaosSimulator(backends=["primary", "secondary"])
-        
+
         # Primary is down
         simulator.inject_failure(
             FailureType.BACKEND_DOWN,
             affected_backends=["primary"],
         )
-        
+
         # Should be forced to use secondary
         assert "primary" in simulator.active_chaos.affected_backends
 
     def test_cascading_failure_coverage(self):
         """Routing resilience against cascading failures."""
-        simulator = ChaosSimulator(
-            backends=["primary", "secondary", "fallback"]
-        )
-        
+        simulator = ChaosSimulator(backends=["primary", "secondary", "fallback"])
+
         # Cascade from primary
         simulator.inject_failure(
             FailureType.CASCADING_FAILURE,
             affected_backends=["primary"],
         )
-        
+
         # Should have escape options
         assert len(simulator.backends) > 1
 
@@ -293,39 +293,37 @@ class TestChaosScenarios:
     def test_peak_traffic_scenario(self):
         """Simulate peak traffic with surge."""
         simulator = ChaosSimulator()
-        
+
         simulator.inject_failure(
             FailureType.TRAFFIC_SURGE,
             duration_steps=5,
             intensity=3.0,  # 3x normal
         )
-        
+
         assert simulator.active_chaos.intensity == 3.0
 
     def test_degraded_backend_scenario(self):
         """Simulate backend in degraded state."""
         simulator = ChaosSimulator()
-        
+
         simulator.inject_failure(
             FailureType.SLOW_DEGRADATION,
             duration_steps=50,
             intensity=0.7,
         )
-        
+
         assert simulator.active_chaos.event_type == FailureType.SLOW_DEGRADATION
 
     def test_full_datacenter_failure(self):
         """Simulate full datacenter outage."""
-        simulator = ChaosSimulator(
-            backends=["dc1-primary", "dc1-secondary", "dc2-primary", "dc2-secondary"]
-        )
-        
+        simulator = ChaosSimulator(backends=["dc1-primary", "dc1-secondary", "dc2-primary", "dc2-secondary"])
+
         # DC1 goes down
         simulator.inject_failure(
             FailureType.CASCADING_FAILURE,
             affected_backends=["dc1-primary", "dc1-secondary"],
         )
-        
+
         # Should still have DC2 available
         dc2_available = any("dc2" in b for b in simulator.backends)
         assert dc2_available

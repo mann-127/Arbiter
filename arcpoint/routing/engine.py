@@ -5,16 +5,22 @@ ML-predicted latency and contextual signals.
 """
 
 import logging
-import os
 import time
 from collections import deque
-from typing import List, Optional, Dict, Literal, Tuple
+from pathlib import Path
+from typing import TYPE_CHECKING, List, Literal, Optional, Tuple
+
 import joblib
 import numpy as np
 import pandas as pd
 
-logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+if TYPE_CHECKING:
+    from arcpoint.feedback.loop import OnlineLearner
+
 logger = logging.getLogger(__name__)
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent.parent
+MODEL_DEFAULT_PATH = _REPO_ROOT / "models" / "latency_predictor.pkl"
 
 
 class RealTimeFeatureStore:
@@ -54,35 +60,49 @@ class RealTimeFeatureStore:
 
 
 class IntelligentRouter:
-    """ML-powered router with predictive circuit breaker."""
+    """ML-powered router with predictive circuit breaker.
+
+    Uses a trained RandomForest as the primary predictor. When an OnlineLearner
+    is provided and fitted, predictions are blended (70% RF / 30% online) so the
+    feedback loop actively influences routing decisions.
+    """
 
     LATENCY_THRESHOLD_MS = 300
     DECISION_PRIMARY = "PRIMARY"
     DECISION_REROUTE = "REROUTE"
     DECISION_ROUND_ROBIN = "ROUND_ROBIN"
 
-    def __init__(self, model_path):
+    # Weight given to the online learner when blending predictions.
+    ONLINE_BLEND_WEIGHT = 0.3
+
+    def __init__(self, model_path, online_learner: Optional["OnlineLearner"] = None):
         """Load trained model.
 
         Args:
-            model_path: Path to serialized model file
+            model_path: Path to serialized RandomForest model file
+            online_learner: Optional fitted OnlineLearner for blended prediction
 
         Raises:
             FileNotFoundError: If model file doesn't exist
         """
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(
-                f"Model not found at {model_path}. Run 'arcpoint/routing/model.py' first."
-            )
+        model_path = Path(model_path)
+        if not model_path.exists():
+            raise FileNotFoundError(f"Model not found at {model_path}. Run 'python -m arcpoint.routing.model' first.")
 
         self.model = joblib.load(model_path)
+        self.online_learner = online_learner
         logger.info(f"Loaded model from {model_path}")
 
-    def decide(self, features: Optional[List[float]]) -> Tuple[Literal["PRIMARY", "REROUTE", "ROUND_ROBIN"], float]:
+    def decide(
+        self,
+        features: Optional[List[float]],
+        online_learner: Optional["OnlineLearner"] = None,
+    ) -> Tuple[Literal["PRIMARY", "REROUTE", "ROUND_ROBIN"], float]:
         """Make routing decision based on predicted latency.
 
         Args:
             features: Feature vector or None (cold start)
+            online_learner: Override the instance-level learner for this call
 
         Returns:
             tuple: (decision_string, predicted_latency)
@@ -94,32 +114,34 @@ class IntelligentRouter:
             [features],
             columns=["current_load", "latency_ma_5", "latency_slope"],
         )
-        predicted_latency = self.model.predict(X)[0]
+        rf_pred = float(self.model.predict(X)[0])
 
-        if predicted_latency > self.LATENCY_THRESHOLD_MS:
-            decision = self.DECISION_REROUTE
+        learner = online_learner or self.online_learner
+        if learner is not None and learner.is_fitted:
+            ol_pred = float(learner.predict(features)[0])
+            predicted_latency = (1 - self.ONLINE_BLEND_WEIGHT) * rf_pred + self.ONLINE_BLEND_WEIGHT * ol_pred
         else:
-            decision = self.DECISION_PRIMARY
+            predicted_latency = rf_pred
 
+        decision = self.DECISION_REROUTE if predicted_latency > self.LATENCY_THRESHOLD_MS else self.DECISION_PRIMARY
         return decision, predicted_latency
 
 
 def simulate_live_traffic():
     """Simulate traffic spike scenario and demonstrate routing decisions."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     logger.info("Starting Arcpoint routing engine...")
 
     store = RealTimeFeatureStore()
     try:
-        router = IntelligentRouter("models/latency_predictor.pkl")
+        router = IntelligentRouter(MODEL_DEFAULT_PATH)
     except FileNotFoundError as e:
         logger.error(str(e))
         return
 
     logger.info("Connected to stream. Listening for metrics...")
     print("-" * 60)
-    print(
-        f"{'TIME':<10} | {'LOAD':<6} | {'ACTUAL LATENCY':<15} | {'DECISION':<25}"
-    )
+    print(f"{'TIME':<10} | {'LOAD':<6} | {'ACTUAL LATENCY':<15} | {'DECISION':<25}")
     print("-" * 60)
 
     # Scenario: Normal → Spike → Recovery
@@ -137,9 +159,9 @@ def simulate_live_traffic():
         features = store.get_features()
         decision, pred_val = router.decide(features)
         if decision == router.DECISION_REROUTE:
-            decision_label = f"⚠️ REROUTE (Pred: {pred_val:.0f}ms)"
+            decision_label = f"REROUTE (Pred: {pred_val:.0f}ms)"
         elif decision == router.DECISION_PRIMARY:
-            decision_label = f"✅ PRIMARY (Pred: {pred_val:.0f}ms)"
+            decision_label = f"PRIMARY (Pred: {pred_val:.0f}ms)"
         else:
             decision_label = "ROUND_ROBIN (Cold Start)"
 

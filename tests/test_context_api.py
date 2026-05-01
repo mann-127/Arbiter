@@ -1,13 +1,14 @@
 """Tests for Context API endpoints and schemas."""
-import sys
+
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
 from fastapi.testclient import TestClient
+
 from arcpoint.context.api import app
-from arcpoint.context.schemas import Availability, IncidentSeverity
 
 
 @pytest.fixture
@@ -53,7 +54,7 @@ class TestModelHealthEndpoint:
         """Model response should match ModelHealth schema."""
         response = client.get("/models")
         models = response.json()
-        
+
         required_fields = [
             "model_id",
             "availability",
@@ -62,7 +63,7 @@ class TestModelHealthEndpoint:
             "p95_latency_ms",
             "requests_per_min",
         ]
-        
+
         for model in models:
             for field in required_fields:
                 assert field in model
@@ -88,7 +89,7 @@ class TestModelHealthEndpoint:
         """Model availability should be valid enum value."""
         response = client.get("/models")
         models = response.json()
-        
+
         valid_values = ["available", "degraded", "unavailable"]
         for model in models:
             assert model["availability"] in valid_values
@@ -97,7 +98,7 @@ class TestModelHealthEndpoint:
         """Error rate should be between 0 and 1."""
         response = client.get("/models")
         models = response.json()
-        
+
         for model in models:
             assert 0 <= model["error_rate"] <= 1
 
@@ -105,7 +106,7 @@ class TestModelHealthEndpoint:
         """Latency values should be positive."""
         response = client.get("/models")
         models = response.json()
-        
+
         for model in models:
             assert model["avg_latency_ms"] > 0
             assert model["p95_latency_ms"] > model["avg_latency_ms"]
@@ -126,7 +127,7 @@ class TestBackendStatusEndpoint:
         """Backend response should match BackendStatus schema."""
         response = client.get("/backends")
         backends = response.json()
-        
+
         required_fields = [
             "backend_id",
             "region",
@@ -136,7 +137,7 @@ class TestBackendStatusEndpoint:
             "cost_per_request",
             "spot_available",
         ]
-        
+
         for backend in backends:
             for field in required_fields:
                 assert field in backend
@@ -157,7 +158,7 @@ class TestBackendStatusEndpoint:
         """Current load should not exceed capacity."""
         response = client.get("/backends")
         backends = response.json()
-        
+
         for backend in backends:
             assert backend["current_load"] <= backend["capacity"]
 
@@ -165,7 +166,7 @@ class TestBackendStatusEndpoint:
         """Cost per request should be positive."""
         response = client.get("/backends")
         backends = response.json()
-        
+
         for backend in backends:
             assert backend["cost_per_request"] > 0
 
@@ -178,7 +179,7 @@ class TestUserContextEndpoint:
         response = client.get("/users/user_123")
         assert response.status_code == 200
         user = response.json()
-        
+
         required_fields = ["user_id", "tier", "sla_latency_ms", "cost_ceiling_per_request"]
         for field in required_fields:
             assert field in user
@@ -211,7 +212,7 @@ class TestIncidentsEndpoint:
         """Incident response should match schema."""
         response = client.get("/incidents")
         incidents = response.json()
-        
+
         if incidents:  # Only test if there are incidents
             required_fields = ["incident_id", "severity", "affected_service", "description"]
             for incident in incidents:
@@ -222,7 +223,7 @@ class TestIncidentsEndpoint:
         """Incident severity should be valid enum."""
         response = client.get("/incidents")
         incidents = response.json()
-        
+
         valid_severities = ["low", "medium", "high", "critical"]
         for incident in incidents:
             assert incident["severity"] in valid_severities
@@ -236,7 +237,7 @@ class TestTrafficForecastEndpoint:
         response = client.get("/forecast")
         assert response.status_code == 200
         forecast = response.json()
-        
+
         required_fields = [
             "current_requests_per_min",
             "predicted_requests_per_min",
@@ -249,7 +250,7 @@ class TestTrafficForecastEndpoint:
         """Forecast values should be positive."""
         response = client.get("/forecast")
         forecast = response.json()
-        
+
         assert forecast["current_requests_per_min"] > 0
         assert forecast["predicted_requests_per_min"] > 0
 
@@ -257,7 +258,7 @@ class TestTrafficForecastEndpoint:
         """Trend should be valid direction."""
         response = client.get("/forecast")
         forecast = response.json()
-        
+
         valid_trends = ["up", "down", "stable"]
         assert forecast["trend"] in valid_trends
 
@@ -273,7 +274,7 @@ class TestDecisionAuditEndpoint:
             "decision": "PRIMARY",
             "timestamp": "2026-03-06T12:00:00Z",
         }
-        
+
         response = client.post("/decisions", json=decision_data)
         assert response.status_code == 200
 
@@ -288,7 +289,7 @@ class TestDecisionAuditEndpoint:
         """Decisions should have required fields."""
         response = client.get("/decisions/recent")
         decisions = response.json()
-        
+
         if decisions:
             required_fields = ["request_id", "predicted_latency_ms", "decision"]
             for decision in decisions:
@@ -308,7 +309,7 @@ class TestFeedbackEndpoint:
             "routing_decision": "PRIMARY",
             "timestamp": "2026-03-06T12:00:00Z",
         }
-        
+
         response = client.post("/feedback", json=feedback_data)
         assert response.status_code == 200
 
@@ -317,7 +318,7 @@ class TestFeedbackEndpoint:
         response = client.get("/feedback/stats")
         assert response.status_code == 200
         stats = response.json()
-        
+
         # Should have metric fields even if no feedback yet
         assert isinstance(stats, dict)
 
@@ -325,7 +326,7 @@ class TestFeedbackEndpoint:
         """Feedback stats should include accuracy metric."""
         response = client.get("/feedback/stats")
         stats = response.json()
-        
+
         # May be empty but should have structure
         if "accuracy" in stats:
             assert 0 <= stats["accuracy"] <= 1

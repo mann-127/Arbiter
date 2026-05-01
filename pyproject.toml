@@ -35,17 +35,17 @@ dependencies = [
     "streamlit>=1.28.0",
     "jupyter>=1.0.0",
     "ipykernel>=6.25.0",
-    "anthropic>=0.7.0",
 ]
 
 [project.optional-dependencies]
+llm = [
+    "anthropic>=0.7.0",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.21.0",
-    "black>=23.7.0",
-    "ruff>=0.0.292",
-    "mypy>=1.5.0",
+    "ruff>=0.4.0",
 ]
 test = [
     "pytest>=7.4.0",
@@ -63,13 +63,16 @@ Repository = "https://github.com/arcpoint/arcpoint"
 [tool.setuptools]
 packages = ["arcpoint", "data", "tests"]
 
+[tool.uv]
+package = true
+
 [tool.pytest.ini_options]
 minversion = "7.0"
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-v --strict-markers --tb=short --cov=arcpoint --cov=data --cov-report=term-missing"
+addopts = "-v --strict-markers --strict-config --tb=short --cov=arcpoint --cov=data --cov-report=term-missing"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
@@ -83,43 +86,16 @@ omit = [
     "*/__init__.py",
 ]
 
-[tool.black]
-line-length = 120
-target-version = ["py310", "py311", "py312", "py313"]
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-  | models
-)/
-'''
-
 [tool.ruff]
 line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I", "N"]
-ignore = ["E501"]
-target-version = "py310"
+# E501: line length handled by ruff formatter
+# N806: ML convention uses uppercase X for feature matrices (sklearn standard)
+# F841: unused variables in tests are intentional scaffolding
+ignore = ["E501", "N806", "F841", "W291"]
 
-[tool.mypy]
-python_version = "3.13"
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = false
-disallow_incomplete_defs = false
-
-[[tool.mypy.overrides]]
-module = [
-    "sklearn.*",
-    "jupyter.*",
-    "streamlit.*",
-    "plotly.*",
-]
-ignore_missing_imports = true
+[tool.ruff.lint.isort]
+known-first-party = ["arcpoint"]

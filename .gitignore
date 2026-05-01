@@ -3,16 +3,24 @@
 
 # Editor
 .vscode/
+.idea/
 
 # Python virtual environments
 .venv/
+venv/
 
 # Python cache
 __pycache__/
+*.py[cod]
 
 # Jupyter
 .ipynb_checkpoints/
 *.ipynb_checkpoints
+
+# Environment files
+.env
+.env.*
+!.env.example
 
 # Project-specific generated files
 data/historical_logs.csv
@@ -27,6 +35,16 @@ htmlcov/
 # Build artifacts
 build/
 dist/
-*.egg-info
+*.egg-info/
+
+# Tool caches
+.mypy_cache/
+.ruff_cache/
+
+# Runtime config (use config.example.yml as template)
+config.yml
+
+# Log files
+*.jsonl
 
 arcpoint.pdf

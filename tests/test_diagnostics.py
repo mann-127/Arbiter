@@ -1,14 +1,15 @@
 """Tests for diagnostics subsystem (drift and anomaly detection)."""
-import sys
+
 import os
+import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import pytest
 import numpy as np
+import pytest
+
 from arcpoint.diagnostics.anomaly import AnomalyDetector, LatencyAnomalyDetector
 from arcpoint.feedback.loop import DriftDetector
-
 
 # ============================================================================
 # Anomaly Detector Tests
@@ -290,13 +291,15 @@ class TestCombinedAnomalyDetection:
 
         # Warmup general detector
         for i in range(100):
-            general_detector.update({
-                "current_load": 100,
-                "avg_latency_ms": 100,
-                "error_rate": 0.01,
-                "latency_slope": 5,
-                "load_change_rate": 0,
-            })
+            general_detector.update(
+                {
+                    "current_load": 100,
+                    "avg_latency_ms": 100,
+                    "error_rate": 0.01,
+                    "latency_slope": 5,
+                    "load_change_rate": 0,
+                }
+            )
 
         # Feed same data to both
         test_latencies = [100.0, 101.0, 99.0, 102.0, 500.0]  # Last one is extreme
@@ -305,13 +308,15 @@ class TestCombinedAnomalyDetection:
         latency_results = []
 
         for latency in test_latencies:
-            result = general_detector.update({
-                "current_load": 100,
-                "avg_latency_ms": latency,
-                "error_rate": 0.01,
-                "latency_slope": 0,
-                "load_change_rate": 0,
-            })
+            result = general_detector.update(
+                {
+                    "current_load": 100,
+                    "avg_latency_ms": latency,
+                    "error_rate": 0.01,
+                    "latency_slope": 0,
+                    "load_change_rate": 0,
+                }
+            )
 
             latency_result = latency_detector.is_anomaly(latency)
 
@@ -339,22 +344,26 @@ class TestDriftAndAnomalyIntegration:
         # Stable baseline
         for i in range(100):
             drift_detector.update(2.0)
-            anomaly_detector.update({
+            anomaly_detector.update(
+                {
+                    "current_load": 100,
+                    "avg_latency_ms": 100,
+                    "error_rate": 0.01,
+                    "latency_slope": 5,
+                    "load_change_rate": 0,
+                }
+            )
+
+        # Single anomaly (high error)
+        result = anomaly_detector.update(
+            {
                 "current_load": 100,
-                "avg_latency_ms": 100,
+                "avg_latency_ms": 500,
                 "error_rate": 0.01,
                 "latency_slope": 5,
                 "load_change_rate": 0,
-            })
-
-        # Single anomaly (high error)
-        result = anomaly_detector.update({
-            "current_load": 100,
-            "avg_latency_ms": 500,
-            "error_rate": 0.01,
-            "latency_slope": 5,
-            "load_change_rate": 0,
-        })
+            }
+        )
 
         # Should detect anomaly
         if result:
@@ -372,13 +381,15 @@ class TestDriftAndAnomalyIntegration:
         # Baseline
         for i in range(50):
             drift_detector.update(2.0)
-            anomaly_detector.update({
-                "current_load": 100,
-                "avg_latency_ms": 100,
-                "error_rate": 0.01,
-                "latency_slope": 5,
-                "load_change_rate": 0,
-            })
+            anomaly_detector.update(
+                {
+                    "current_load": 100,
+                    "avg_latency_ms": 100,
+                    "error_rate": 0.01,
+                    "latency_slope": 5,
+                    "load_change_rate": 0,
+                }
+            )
 
         # Gradual increase in errors (drift)
         drift_detected = False
