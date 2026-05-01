@@ -15,7 +15,7 @@ import numpy as np
 import pandas as pd
 
 if TYPE_CHECKING:
-    from arcpoint.feedback.loop import OnlineLearner
+    from arbiter.feedback.loop import OnlineLearner
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +87,7 @@ class IntelligentRouter:
         """
         model_path = Path(model_path)
         if not model_path.exists():
-            raise FileNotFoundError(f"Model not found at {model_path}. Run 'python -m arcpoint.routing.model' first.")
+            raise FileNotFoundError(f"Model not found at {model_path}. Run 'python -m arbiter.routing.model' first.")
 
         self.model = joblib.load(model_path)
         self.online_learner = online_learner
@@ -130,7 +130,7 @@ class IntelligentRouter:
 def simulate_live_traffic():
     """Simulate traffic spike scenario and demonstrate routing decisions."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-    logger.info("Starting Arcpoint routing engine...")
+    logger.info("Starting Arbiter routing engine...")
 
     store = RealTimeFeatureStore()
     try:

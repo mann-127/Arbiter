@@ -21,15 +21,15 @@ import streamlit as st
 CONTEXT_SERVICE_URL = st.secrets.get("context_service_url", "http://localhost:8000")
 
 # Page config
-st.set_page_config(page_title="Arcpoint Context Engine Dashboard", page_icon="🧠", layout="wide")
+st.set_page_config(page_title="Arbiter Context Engine Dashboard", page_icon="🧠", layout="wide")
 
 # Title
-st.title("🧠 Arcpoint Context Engine Dashboard")
+st.title("🧠 Arbiter Context Engine Dashboard")
 st.markdown("*Real-time monitoring for intelligent routing*")
 
 
 class ContextServiceClient:
-    """Client for Arcpoint Context Service."""
+    """Client for Arbiter Context Service."""
 
     def __init__(self, base_url: str):
         self.base_url = base_url

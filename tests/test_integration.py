@@ -8,16 +8,16 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import pytest
 
-from arcpoint.diagnostics.anomaly import AnomalyDetector, LatencyAnomalyDetector
-from arcpoint.diagnostics.chaos import ChaosSimulator, FailureType
-from arcpoint.feedback.loop import (
+from arbiter.diagnostics.anomaly import AnomalyDetector, LatencyAnomalyDetector
+from arbiter.diagnostics.chaos import ChaosSimulator, FailureType
+from arbiter.feedback.loop import (
     ABTestFramework,
     DriftDetector,
     FeedbackCollector,
     OnlineLearner,
 )
-from arcpoint.routing.engine import IntelligentRouter, RealTimeFeatureStore
-from arcpoint.routing.model import MODEL_OUTPUT_PATH
+from arbiter.routing.engine import IntelligentRouter, RealTimeFeatureStore
+from arbiter.routing.model import MODEL_OUTPUT_PATH
 
 
 class TestRequestRoutingWorkflow:

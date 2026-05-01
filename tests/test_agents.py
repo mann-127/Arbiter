@@ -7,8 +7,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
 
-from arcpoint.agents.context_api import ContextAPI
-from arcpoint.agents.prompts import ROUTING_QUERY_TEMPLATE, ROUTING_SYSTEM_PROMPT
+from arbiter.agents.context_api import ContextAPI
+from arbiter.agents.prompts import ROUTING_QUERY_TEMPLATE, ROUTING_SYSTEM_PROMPT
 
 
 @pytest.fixture

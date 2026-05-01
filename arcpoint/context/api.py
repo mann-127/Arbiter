@@ -14,7 +14,7 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel
 
-from arcpoint.context.schemas import (
+from arbiter.context.schemas import (
     Availability,
     BackendStatus,
     FeedbackRecord,
@@ -29,7 +29,7 @@ from arcpoint.context.schemas import (
 logger = logging.getLogger(__name__)
 
 app = FastAPI(
-    title="Arcpoint Context Service",
+    title="Arbiter Context Service",
     description="Real-time context API for intelligent routing",
     version="1.0.0",
 )
@@ -299,5 +299,5 @@ if __name__ == "__main__":
     import uvicorn
 
     logging.basicConfig(level=logging.INFO)
-    logger.info("Starting Arcpoint Context Service...")
+    logger.info("Starting Arbiter Context Service...")
     uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

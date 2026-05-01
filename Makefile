@@ -1,7 +1,7 @@
 .PHONY: help install install-dev test test-cov lint format type clean run-all generate train route serve dashboard
 
 help:
-	@echo "ArcPoint: Intelligent Request Router"
+	@echo "Arbiter: Intelligent Request Router"
 	@echo ""
 	@echo "Available targets:"
 	@echo "  make install         - Install dependencies with uv"
@@ -34,14 +34,14 @@ test-cov:
 	@echo "Coverage report: htmlcov/index.html"
 
 lint:
-	uv run ruff check arcpoint/ data/ tests/
+	uv run ruff check arbiter/ data/ tests/
 
 format:
-	uv run ruff format arcpoint/ data/ tests/
-	uv run ruff check --fix arcpoint/ data/ tests/
+	uv run ruff format arbiter/ data/ tests/
+	uv run ruff check --fix arbiter/ data/ tests/
 
 type:
-	uv run ruff check --select ANN,TCH arcpoint/ data/ tests/ || true
+	uv run ruff check --select ANN,TCH arbiter/ data/ tests/ || true
 
 clean:
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
@@ -57,16 +57,16 @@ generate:
 	uv run python data/generate.py
 
 train:
-	uv run python -m arcpoint.routing.model
+	uv run python -m arbiter.routing.model
 
 route:
-	uv run python -m arcpoint.routing.engine
+	uv run python -m arbiter.routing.engine
 
 serve:
-	uv run uvicorn arcpoint.context.api:app --reload
+	uv run uvicorn arbiter.context.api:app --reload
 
 dashboard:
-	uv run streamlit run arcpoint/observability/dashboard.py
+	uv run streamlit run arbiter/observability/dashboard.py
 
 run-all: clean generate train route
 	@echo ""

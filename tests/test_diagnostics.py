@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import pytest
 
-from arcpoint.diagnostics.anomaly import AnomalyDetector, LatencyAnomalyDetector
-from arcpoint.feedback.loop import DriftDetector
+from arbiter.diagnostics.anomaly import AnomalyDetector, LatencyAnomalyDetector
+from arbiter.feedback.loop import DriftDetector
 
 # ============================================================================
 # Anomaly Detector Tests
