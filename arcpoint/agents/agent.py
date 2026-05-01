@@ -137,7 +137,7 @@ class RoutingAgent:
             # decision = json.loads(message.content[0].text)
             raise NotImplementedError(
                 "Real LLM path is not wired up. Install the 'llm' optional dependency "
-                "('pip install arcpoint[llm]') and initialize an Anthropic/OpenAI client."
+                "('pip install arbiter[llm]') and initialize an Anthropic/OpenAI client."
             )
 
         logger.info(

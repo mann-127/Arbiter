@@ -1,6 +1,14 @@
-# ArcPoint: Intelligent Request Router
+# Arbiter: Intelligent Request Router
 
-ArcPoint is a production-grade request routing engine that combines ML-based latency prediction, real-time feedback loops, drift and anomaly detection, and agentic reasoning to make intelligent routing decisions at scale.
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-green.svg)](...)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230.svg)](https://docs.astral.sh/ruff/)
+[![CI](https://github.com/mann-127/BladeRunner/actions/workflows/ci.yml/badge.svg)](https://github.com/mann-127/BladeRunner/actions)
+[![Permissions: Standard](https://img.shields.io/badge/permissions-standard-orange.svg)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## Overview
+Arbiter is a production-grade request routing engine that combines ML-based latency prediction, real-time feedback loops, drift and anomaly detection, and agentic reasoning to make intelligent routing decisions at scale.
 
 **Key Capabilities:**
 - 🎯 **ML-Powered Routing**: Predict request latency 5 minutes ahead; reroute proactively before degradation
@@ -15,19 +23,18 @@ ArcPoint is a production-grade request routing engine that combines ML-based lat
 
 ## Architecture Overview
 
-ArcPoint decomposes request routing into five complementary subsystems:
+Arbiter decomposes request routing into five complementary subsystems:
 
-![ArcPoint Architecture](docs/arcpoint-system-architecture.png)
+![Arbiter Architecture](docs/arbiter-system-architecture.png)
 
 ### Five Core Subsystems
 
-#### 1. **ML Routing Pipeline** (`arcpoint/routing/`)
+#### 1. **ML Routing Pipeline** (`arbiter/routing/`)
 Real-time latency prediction driving primary routing decisions.
 
 **Components:**
 - `model.py`: Trains RandomForestRegressor on temporal split; predicts 5-minute latency horizon
-- `features.py`: Sliding-window feature engineering (current load, moving average, slope)
-- `engine.py`: Live traffic simulation; computes features and makes PRIMARY/REROUTE decisions
+- `engine.py`: Live traffic simulation; computes sliding-window features (load, moving average, slope) and makes PRIMARY/REROUTE decisions
 
 **Why this approach:**
 - Time-series forecasting avoids training/test leakage (temporal split)
@@ -35,7 +42,7 @@ Real-time latency prediction driving primary routing decisions.
 - Random Forest handles non-linear load-latency relationships efficiently
 - Sub-20ms inference latency suitable for hot-path routing
 
-#### 2. **Context System** (`arcpoint/context/`)
+#### 2. **Context System** (`arbiter/context/`)
 FastAPI service exposing real-time system state for routing decisions and observability.
 
 **11 Typed Endpoints:**
@@ -50,7 +57,7 @@ FastAPI service exposing real-time system state for routing decisions and observ
 - `GET /feedback/stats` — aggregate stats (MAE, accuracy, RMSE over time window)
 - `GET /decisions/recent` — recent routing decisions (audit trail)
 
-**Schema Definitions** (`arcpoint/context/schemas.py`):
+**Schema Definitions** (`arbiter/context/schemas.py`):
 - `ModelHealth`: model_id, availability (enum), error_rate, p95_latency_ms, requests_per_min
 - `BackendStatus`: backend_id, region, provider, current_load, capacity, cost_per_request, spot_available
 - `UserContext`: user_id, tier, sla_latency_ms, quota_used/limit, cost_ceiling
@@ -67,7 +74,7 @@ FastAPI service exposing real-time system state for routing decisions and observ
 
 **Current implementation**: In-memory mock stores (ready for Redis/PostgreSQL integration)
 
-#### 3. **Feedback & Online Learning** (`arcpoint/feedback/`)
+#### 3. **Feedback & Online Learning** (`arbiter/feedback/`)
 Closed-loop adaptation to production ground truth.
 
 **Components:**
@@ -81,7 +88,7 @@ Closed-loop adaptation to production ground truth.
 - A/B framework requires balanced bucket assignment upstream
 - Feedback delay (typically minutes) acceptable for 5-minute forecast horizon
 
-#### 4. **Drift & Anomaly Detection** (`arcpoint/diagnostics/`)
+#### 4. **Drift & Anomaly Detection** (`arbiter/diagnostics/`)
 Real-time alerting for model degradation and system anomalies.
 
 **Drift Detection** (`feedback/loop.py`):
@@ -100,13 +107,13 @@ Real-time alerting for model degradation and system anomalies.
 
 **Integration**: Both detectors feed into `LatencyAnomalyDetector` wrapper with combined scoring
 
-#### 5. **Agent-Centric Path** (`arcpoint/agents/`)
+#### 5. **Agent-Centric Path** (`arbiter/agents/`)
 LLM-based reasoning layer for contextual routing when pure ML signals are unclear.
 
 **Components:**
 - `context_api.py`: Structured context provider (same interface as Context Service)
 - `prompts.py`: System prompt defining routing task and context template
-- `llm.py`: Decision flow using Claude or GPT-4; returns routing decision + explanation
+- `agent.py`: Decision flow using Claude or GPT-4; returns routing decision + explanation
 
 **Use Case**: Ambiguous scenarios (e.g., high load but stable latency; new user with no history) where deterministic threshold is risky
 
@@ -131,7 +138,7 @@ Generates realistic request/latency sequences with:
 
 **Output**: 1000+ CSV records with features (load, latency, error_rate, user_tier, timestamp)
 
-### Model Training (`arcpoint/routing/model.py`)
+### Model Training (`arbiter/routing/model.py`)
 
 **Approach:**
 - Train/test split by timestamp (no leakage): first 80% for training, last 20% for validation
@@ -146,7 +153,7 @@ Generates realistic request/latency sequences with:
 
 **Models saved** to `models/latency_predictor.pkl` for live routing use
 
-### Live Routing Simulation (`arcpoint/routing/engine.py`)
+### Live Routing Simulation (`arbiter/routing/engine.py`)
 
 Simulates incoming requests with:
 - Real-time load spikes and recovery
@@ -160,7 +167,7 @@ Simulates incoming requests with:
 
 ### Test & Coverage Summary
 
-**Comprehensive Test Suite: 145 tests, 100% passing (59% code coverage)**
+**Comprehensive Test Suite: 147 tests, 100% passing (60% code coverage)**
 
 Organized by subsystem for maintainability:
 
@@ -206,20 +213,24 @@ Organized by subsystem for maintainability:
 - End-to-end scenarios (peak traffic, anomaly detection)
 - Complete system lifecycle (200-request scenario with chaos)
 
+**Smoke Tests** (`tests/test_smoke.py`, 2 tests):
+- Package import validation (top-level `arbiter` module)
+- Submodule import validation (routing, feedback, diagnostics, observability)
+
 ### Code Coverage by Module
 
 | Module | Coverage | Status |
 |--------|----------|--------|
-| `arcpoint/context/schemas.py` | 100% | ✅ Complete |
-| `arcpoint/agents/context_api.py` | 96% | ✅ Excellent |
-| `arcpoint/feedback/loop.py` | 92% | ✅ Excellent |
-| `arcpoint/context/api.py` | 92% | ✅ Excellent |
-| `arcpoint/diagnostics/anomaly.py` | 81% | ✅ Good |
-| `arcpoint/routing/engine.py` | 59% | ⚠️ Partial |
-| `arcpoint/diagnostics/chaos.py` | 37% | ⚠️ Basic |
-| `arcpoint/routing/model.py` | 29% | ⚠️ Minimal |
-| `arcpoint/agents/agent.py` | 0% | ❌ Untested |
-| `arcpoint/observability/dashboard.py` | 0% | ❌ Untested |
+| `arbiter/context/schemas.py` | 100% | ✅ Complete |
+| `arbiter/feedback/loop.py` | 92% | ✅ Excellent |
+| `arbiter/context/api.py` | 92% | ✅ Excellent |
+| `arbiter/agents/context_api.py` | 86% | ✅ Good |
+| `arbiter/diagnostics/anomaly.py` | 80% | ✅ Good |
+| `arbiter/routing/engine.py` | 60% | ⚠️ Partial |
+| `arbiter/diagnostics/chaos.py` | 36% | ⚠️ Basic |
+| `arbiter/routing/model.py` | 29% | ⚠️ Minimal |
+| `arbiter/agents/agent.py` | 0% | ❌ Untested |
+| `arbiter/observability/dashboard.py` | 0% | ❌ Untested |
 
 **Coverage Notes:**
 - **High coverage** (>90%): Core feedback loops, schemas, and context APIs fully validated
@@ -229,8 +240,8 @@ Organized by subsystem for maintainability:
 
 **Run Tests:**
 ```bash
-uv run --with pytest pytest tests/ -v
-# All 145 tests pass in ~6 seconds
+uv run pytest tests/ -v
+# All 147 tests pass in ~16 seconds
 ```
 
 ### Live Validation (March 6, 2026)
@@ -270,8 +281,8 @@ powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 Clone and run:
 ```bash
-git clone https://github.com/arcpoint/arcpoint.git
-cd arcpoint
+git clone https://github.com/arbiter/arbiter.git
+cd arbiter
 
 # Run data generation
 make generate
@@ -310,19 +321,18 @@ make test-cov
 ## Project Structure
 
 ```
-arcpoint/                              # Main package root
+arbiter/                              # Main package root
 ├── README.md                          # This file
 ├── pyproject.toml                     # uv project configuration
 ├── LICENSE                            # MIT license
 │
-├── arcpoint/                          # Python package (all subsystems)
+├── arbiter/                          # Python package (all subsystems)
 │   ├── __init__.py                    # Package entry point
 │   │
 │   ├── routing/                       # ML routing subsystem
 │   │   ├── __init__.py
 │   │   ├── model.py                   # RandomForest latency predictor (training)
-│   │   ├── engine.py                  # Real-time routing engine
-│   │   └── features.py                # Feature extraction (sliding window)
+│   │   └── engine.py                  # Real-time routing engine + sliding-window feature store
 │   │
 │   ├── context/                       # REST Context API subsystem
 │   │   ├── __init__.py
@@ -340,7 +350,7 @@ arcpoint/                              # Main package root
 │   │
 │   ├── agents/                        # LLM-centric Decision Path subsystem
 │   │   ├── __init__.py
-│   │   ├── llm.py                     # Claude/GPT decision flow
+│   │   ├── agent.py                   # Claude/GPT decision flow
 │   │   ├── prompts.py                 # System prompt + templates
 │   │   └── context_api.py             # Structured context provider
 │   │
@@ -352,17 +362,21 @@ arcpoint/                              # Main package root
 │   ├── __init__.py
 │   └── generate.py                    # Synthetic traffic/latency generation
 │
-├── tests/                             # Test suite (35 tests)
+├── tests/                             # Test suite (147 tests)
 │   ├── __init__.py
-│   ├── test_routing.py                # 15 routing tests
-│   ├── test_drift.py                  # 13 drift detection tests
-│   └── test_anomaly.py                # 18 anomaly detection tests
+│   ├── test_routing.py                # 10 routing tests
+│   ├── test_feedback.py               # 26 feedback loop tests
+│   ├── test_diagnostics.py            # 17 drift & anomaly tests
+│   ├── test_context_api.py            # 30 context API tests
+│   ├── test_agents.py                 # 25 agent tests
+│   ├── test_chaos.py                  # 26 chaos engineering tests
+│   ├── test_integration.py            # 11 end-to-end integration tests
+│   └── test_smoke.py                  # 2 package import smoke tests
 │
 ├── notebooks/                         # Interactive analysis
 │   └── exploration.ipynb              # Exploratory data analysis
 │
-├── Makefile                           # Convenience shortcuts (13 targets)
-├── DEVELOPMENT.md                     # Contributor guide
+├── Makefile                           # Convenience shortcuts (14 targets)
 └── models/                            # Trained model artifacts
     └── latency_predictor.pkl          # Serialized RandomForest model
 ```
@@ -413,7 +427,7 @@ arcpoint/                              # Main package root
 - In-memory stores and file-based models
 - Streamlit dashboard for observability
 - Test suite validation
-- **Status**: All components working; 46 tests passing
+- **Status**: All components working; 147 tests passing
 
 ### Phase 2: Production Service Stack (In Progress)
 - Deploy FastAPI Context Service to Kubernetes
@@ -452,7 +466,7 @@ make lint
 
 ## Acknowledgments
 
-ArcPoint is built on proven techniques from:
+Arbiter is built on proven techniques from:
 - Time-series forecasting (Box-Jenkins, ARIMA)
 - Statistical drift detection (Page-Hinkley Test, ADWIN)
 - Unsupervised anomaly detection (Isolation Forest)

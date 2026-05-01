@@ -1,12 +1,12 @@
 services:
-  arcpoint:
+  arbiter:
     build: .
     ports:
       - "8000:8000"
     env_file:
       - .env
     volumes:
-      - arcpoint-data:/app/data
+      - arbiter-data:/app/data
 
 volumes:
-  arcpoint-data:
+  arbiter-data:

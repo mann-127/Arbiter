@@ -1,4 +1,4 @@
-"""ArcPoint: Intelligent Request Router.
+"""Arbiter: Intelligent Request Router.
 
 An AI-powered request routing engine combining ML-based latency prediction,
 real-time feedback loops, drift/anomaly detection, and agentic reasoning.
@@ -13,7 +13,7 @@ Main subsystems:
 """
 
 __version__ = "1.0.0"
-__author__ = "ArcPoint Team"
+__author__ = "Arbiter Team"
 __license__ = "MIT"
 
 __all__ = [

@@ -47,4 +47,4 @@ config.yml
 # Log files
 *.jsonl
 
-arcpoint.pdf
+arbiter.pdf

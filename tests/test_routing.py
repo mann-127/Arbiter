@@ -8,8 +8,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import pytest
 
-from arcpoint.routing.engine import IntelligentRouter, RealTimeFeatureStore
-from arcpoint.routing.model import MODEL_OUTPUT_PATH
+from arbiter.routing.engine import IntelligentRouter, RealTimeFeatureStore
+from arbiter.routing.model import MODEL_OUTPUT_PATH
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def feature_store():
 def router():
     """Load the trained router."""
     if not os.path.exists(MODEL_OUTPUT_PATH):
-        pytest.skip(f"Model not found at {MODEL_OUTPUT_PATH}. Run 'arcpoint/routing/model.py' first.")
+        pytest.skip(f"Model not found at {MODEL_OUTPUT_PATH}. Run 'arbiter/routing/model.py' first.")
     return IntelligentRouter(MODEL_OUTPUT_PATH)
 
 

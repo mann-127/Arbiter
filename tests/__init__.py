@@ -1,1 +1,1 @@
-"""Test suite for Arcpoint Context System."""
+"""Test suite for Arbiter Context System."""

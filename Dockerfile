@@ -8,10 +8,10 @@ WORKDIR /app
 RUN pip install --no-cache-dir uv
 
 COPY pyproject.toml uv.lock README.md /app/
-COPY arcpoint /app/arcpoint
+COPY arbiter /app/arbiter
 
 RUN uv sync --frozen --no-dev
 
 EXPOSE 8000
 
-CMD ["uv", "run", "uvicorn", "arcpoint.context.api:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "arbiter.context.api:app", "--host", "0.0.0.0", "--port", "8000"]

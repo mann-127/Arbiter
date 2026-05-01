@@ -3,7 +3,7 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "arcpoint"
+name = "arbiter"
 version = "1.0.0"
 description = "Intelligent request router combining ML-based latency prediction, real-time feedback loops, drift/anomaly detection, and agentic reasoning"
 readme = "README.md"
@@ -58,10 +58,13 @@ docs = [
 ]
 
 [project.urls]
-Repository = "https://github.com/arcpoint/arcpoint"
+Repository = "https://github.com/arbiter/arbiter"
 
 [tool.setuptools]
-packages = ["arcpoint", "data", "tests"]
+packages = ["arbiter", "data", "tests"]
+
+[tool.uv]
+package = true
 
 [tool.uv]
 package = true
@@ -72,7 +75,7 @@ testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "-v --strict-markers --strict-config --tb=short --cov=arcpoint --cov=data --cov-report=term-missing"
+addopts = "-v --strict-markers --strict-config --tb=short --cov=arbiter --cov=data --cov-report=term-missing"
 markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
@@ -80,7 +83,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["arcpoint", "data"]
+source = ["arbiter", "data"]
 omit = [
     "*/tests/*",
     "*/__init__.py",
@@ -98,4 +101,4 @@ select = ["E", "F", "W", "I", "N"]
 ignore = ["E501", "N806", "F841", "W291"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["arcpoint"]
+known-first-party = ["arbiter"]
